@@ -73,3 +73,81 @@ reversedNames = names.sorted(by: { (s1: String, s2: String) -> Bool in
 reversedNames = names.sorted(by: { (s1: String, s2: String) -> Bool in return s1 > s2 })
 ~~~
 
+#####문맥에서 타입 추론 (Inferring Type From Context)
+
+위 예제에서 정렬 클로저는 String 배열에서 sorted(by:) 매소드의 인자로 사용됩니다. sorted(by:)의 매소드에서 이미 (String, String) -> Bool 타입의 인자가 들어와야 하는지 알기 때문에 클로저에서 이 타입들은 생략 될 수 있습니다. 그래서 위 함수는 더 생략한 형태로 아래와 같이 기술 할 수 있습니다.
+
+~~~swift
+reversedNames = names.sorted(by: { s1, s2 in return s1 > s2 } )
+~~~
+
+위와 같이 클로저의 인자 값과 반환 타입을 생략할 수 있지만, 가독성과 코드의 모호성을 피하기 위해 타입을 명시할 수도 있습니다.
+
+##### 단일 표현 클로저에서의 암시적 반환 (Implicit Returns from Single-Express Closures)
+
+단일 표현 클로저에서는 반환 키워드를 생략할 수 있습니다.
+
+~~~swift
+reversedNames = names.sorted(by: { s1, s2 in s1 > s2 } )
+~~~
+
+이렇게 표현해도 어떠한 모호성도 없습니다. s1과 s2를 인자로 받아 그 두 값을 비교한 결과를 반환합니다.
+
+#####인자 이름 축약 (Shorthand Arguments Names)
+
+Swift는 인라인 클로저에 자동으로 축약 인자 이름을 제공합니다. 이인 자를 사용하면 인자 값을 순서대로 $0, $1, $2 등으로 사용할 수 있습니다. 축약 인자 이름을 사용하면 인자 값과 그 인자로 처리할 때 사용하는 인자가 같다는 것을 알기 때문에 인자를 입력 받는 부분과 in 키워드 부분을 생략 할 수 있습니다. 그러면 이런 형태로 축약 가능합니다.
+
+~~~swift
+reversedNames = names.sorted(by: { $0 > $1 } )
+~~~
+
+축약은 되었지만 논리를 표현하는데는 지장이 없습니다. 인라인 클로저에 생략된 내용을 포함해 설명하면 1. $0과 $1 인자를 두개 받아서 2. $0이 $1 보다 큰지를 비교하고 3. 그 결과(Bool)를 반환해라.
+
+##### 연산자 매소드 (Operator Methods)
+
+여기서 더 줄일 수 있습니다. Swift의 String 타입 연산자에는 String끼리 비교할 수 있는 비교 연산자(>) 를 구현해 두었습니다. 이 때문에 그냥 이 연산자를 사용하면 됩니다.
+
+~~~swift
+reversedNames = names.sorted(by: >)
+~~~
+
+
+
+### 후위 클로저
+
+만약 함수의 마지막 인자로 클로저를 넣고 그 클로저가 길다면 후위 클로저를 사용할 수 있습니다. 이런 형태의 함수와 클로저가 있다면
+
+~~~swift
+func someFunctionThatTakesAClosure(closure: () -> Void) {
+    // body
+}
+~~~
+
+~~~swift
+someFunctionThatTakesAClosure(closure: {
+    // 인자와 반환 생략
+})
+~~~
+
+~~~swift
+someFunctionThatTakesAClosure() {
+    // 후위클로저의 표현법
+}
+~~~
+
+앞에 정렬 예제를 후위로 표현하자면?
+
+~~~swift
+reversedNames = names.sorted() { $0 > $1 }
+~~~
+
+~~~swift
+reversedNames = names.sorted { $0 > $1 } // 마지막 인자가 클로저이고 후위클로저를 사용한다면 ()까지 생략가능
+~~~
+
+
+
+~~~swift
+reversedNames = names.sorted(by: { $0 > $1 } )
+~~~
+
