@@ -145,9 +145,82 @@ reversedNames = names.sorted() { $0 > $1 }
 reversedNames = names.sorted { $0 > $1 } // 마지막 인자가 클로저이고 후위클로저를 사용한다면 ()까지 생략가능
 ~~~
 
-
-
 ~~~swift
 reversedNames = names.sorted(by: { $0 > $1 } )
 ~~~
+
+
+
+#### 값 캡쳐(Capturing Values)
+
+클로저는 특정 문맥의 상수나 변수의 값을 캡쳐할 수 있습니다. 다시말해 원본 값이 사라져도 클로저의 body안에서 그 값을 활용할 수 있습니다. Swift 에서 값을 캡쳐 하는 가장 단순한 형태는 중첩함수 입니다. 중첩 함수는 함수의 body에서 다른 함수를 다시 호출하는 형태로 된 함수 입니다.
+
+~~~swift
+func makeIncrementer(forIncrement amount: Int) -> () -> Int {
+  var runningTotal = 0
+  func incrementer() -> Int {
+    runningTotal += amount
+    return runningTotal
+  }
+  return incrementer
+}
+~~~
+
+(forIncrement amount: Int) -> () -> Int 이것을 쪼개서보면 첫번째 -> 앞부분이 인자이고 뒷부분이 반환값이다
+
+인자 : (forIncrement amount: Int)
+
+반환값 : ( ) -> Int  // 반환값이 클로저인 형태 , 인자가없고 Int형의 클로저를 반환한다
+
+함수안에 incrementer() 함수만 따로보면
+
+~~~swift
+func incrementer() -> Int {
+  runningTotal += amount
+  return runningTotal
+}
+~~~
+
+runningTotal 과 amount도 없지만 함수는 돌아감 그이유는 runningTotal과 amount가 캡쳐링 돼서 그런것이다.
+
+최적화 이유로 swift는 더이상 클로저에 의해 값이 사용되지 않으면 그 값을 복사해 저장하거나 캡쳐링 하지 않는다 Swift는 특정 변수가 더 이상 필요하지 않을때 제거하는 것과 관련한 모든 메모리 관리를 알아서 처리한다.
+
+위에 중첩함수를 실행하면
+
+~~~swift
+let incrementByTen = makeIncrementer(forIncrement: 18)
+// makeIncrementer 는 클로저를 반환 , makeIncrementer 내부의 incrementer 함수를 실행하는 메소드를 반환
+incrementByTen()
+// 값으로 10 반환
+incrementByTen()
+// 값으로 20 반환
+incrementByTen()
+// 값으로 30 반환
+
+let incrementBySeven = makeIncrementer(forIncrement: 7)
+incrementBySeven()
+// return 7
+
+incrementByTen()
+// 값으로 40 반환
+// 다른 클로저이기 때문에 연산에는 전혀 영향이 없다. 그냥 다른 저장소의 변수를 사용해 계산한다.
+~~~
+
+만약 클로저를 어떤 클래스 인스턴스의 프로퍼티로 할당하고 그 클로저가 그 인스턴스를 캡쳐링하면 강한 순환참조에 빠지게됩니다. 즉, 인스턴스의 사용이 끝나도 메모리를 해제하지 못하는것이죠. 그래서 Swift는 이 문제를 다루기 위해 캡처리스트를 사용합니다. 더많은 정보는 클로저의 강함 참조 순환을 참조하세요
+
+#### 클로저는 참조 타입 (Closure Are Reference Types)
+
+앞 예제에서 incrementBySeven 과 incrementByTen 은 상수이다. 그런데 어떻게 runningTotal 변수를 계속 증가시킬 수 있었을까? 탑은 함수와 클로저는 참조타입이기 때문이다. 함수와 클로저를 상수나 변수에 할당할 때 실제로는 상수와 변수에 해당 함수나 클로저의 참조가 할당된다. 그래서 만약 한 클로저를 두 상수나 변수에 할당하면 그 두 상수나 변수는 같은 클로저를 참조하고 있다.
+
+~~~swift
+let alsoIncrementByTen() = incrementByTen
+alsoIncrementByTen()
+// 50을 반환합니다. 앞에서 사용했던 마지막상태의 incrementByTen을 also가 참조하고 그다음 10을 증가시켰기때문에
+~~~
+
+#### 이스케이핑 클로저 (Escaping Closure)
+
+클로저를 함수의 파라미터로 넣을 수 있는데, 함수 밖(함수가 끝나고)에서 실행되는 클로저 예를들어, 비동기로 실행되거나 completionHandler로 사용되는 클로저는 파라미터 타입 앞에 @escaping 이라는 키워드를 명시해야 합니다.
+
+
 
