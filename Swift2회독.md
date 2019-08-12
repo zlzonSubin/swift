@@ -242,3 +242,56 @@ var someFunction: (String, String) -> Void = greeting(to:from:)
 someFunctions("sky", "subin") // Hello sky! I'm subin
 ~~~
 
+
+
+## 8강
+
+- if-else
+
+if condition {
+
+} else if condition {
+
+} else if condition {
+
+} else {
+
+}
+
+- switch
+
+switch value {
+
+case pattern:
+
+​	code
+
+default:
+
+​	code
+
+}
+
+
+
+## 9강
+
+- for - in
+
+for item in items {
+
+}
+
+- while
+
+while condition {
+
+}
+
+- repeat - while
+
+repeat {
+
+​	code
+
+} while condition
